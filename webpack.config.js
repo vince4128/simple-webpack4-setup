@@ -96,7 +96,7 @@ const config = {
 
 }
 
-if(dev){
+if(!dev){
     config.plugins.push(
         new CleanWebpackPlugin(['dist/'],{
             dry:false,
