@@ -3,16 +3,26 @@ const CleanWebpackPlugin = require('clean-webpack-plugin');
 const HtmlWebPackPlugin = require('html-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 
+let dev = false;
+let publicPath = '';
+
+if(process.argv.includes('development')){
+    dev = true;
+}
+
+dev ? publicPath = '/' : publicPath = './';
+
 const config = {
 
     entry: {
         app: ['babel-polyfill','./src/index.js']
     },
 
+    
     output: {
-        path: path.resolve('./dist'),
-        filename: '[name].[chunkhash].js'/*,
-        publicPath: '/'*/
+        publicPath,
+        path: path.resolve(__dirname, 'dist'),
+        filename: '[name].[chunkhash].js'
     },
 
     module: {
@@ -33,7 +43,29 @@ const config = {
                     }
                 ]
             },
-
+            {
+                test: /\.(woff2?|eot|ttf|otf)(\?.*)?$/,
+                use: [
+                    {
+                        loader: 'file-loader',
+                        options: {
+                            name: 'fonts/[name].[ext]'
+                        }
+                    }
+                ]
+            },
+            {
+                test: /\.(png|jpe?g|gif|svg)$/,
+                use: [
+                    {
+                        loader: 'file-loader',
+                        options: {
+                            limit: 512,
+                            name: 'img/[name].[ext]'
+                        }
+                    }
+                ]
+            },
             {
                 test: /\.scss$/,
                 use: [
@@ -46,12 +78,8 @@ const config = {
     },
 
     plugins: [
-        new CleanWebpackPlugin(['dist/*'],{
-            dry:false,
-            exclude:['img','video']            
-        }),
         new HtmlWebPackPlugin({
-            template: "./src/index.html",
+            template: "./index.html",
             filename:"./index.html"
         }),
         new MiniCssExtractPlugin({
@@ -68,4 +96,13 @@ const config = {
 
 }
 
-module.exports = config;
+if(dev){
+    config.plugins.push(
+        new CleanWebpackPlugin(['dist/'],{
+            dry:false,
+            exclude:['img','video']            
+        })
+    )
+}
+
+module.exports = (env, argv) => config;
